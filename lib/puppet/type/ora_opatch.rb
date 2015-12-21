@@ -12,11 +12,16 @@ module Puppet
 
     ensurable
 
+    validate do
+      fail "Source is a required attribute for #{name}." unless source
+    end
+
     set_command([:opatch, :opatchauto])
 
     on_create  do | command_builder |
       source = extract_source
       provider.apply_patch(source, command_builder)
+      remove_unzipped_file(source, command_builder)
     end
 
     on_modify  do | command_builder |
@@ -24,8 +29,13 @@ module Puppet
     end
 
     on_destroy  do | command_builder |
-      source = extract_source
+      #
+      # Only the opatchauto requires the source to be extracted
+      # The other providers use stored information.
+      #
+      source = extract_source if self[:provider] == :opatchauto
       provider.remove_patch(source, command_builder)
+      remove_unzipped_file(source, command_builder)
     end
 
     map_title_to_attributes(:name, :oracle_product_home_dir, :patch_id) do
@@ -81,9 +91,13 @@ module Puppet
       Puppet.info "Unzipping source #{source} to #{tmp_dir}"
       environment = {}
       environment[:PATH] = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin'
-      Puppet.info "Done Unzipping source #{source} to #{tmp_dir}"
       Puppet::Util::Execution.execute("unzip -o #{file} -d #{tmp_dir}", :failonfail => true, :uid => os_user, :custom_environment => environment )
+      Puppet.info "Done Unzipping source #{source} to #{tmp_dir}"
       check_source_dir(tmp_dir)
+    end
+
+    def remove_unzipped_file(source, command_builder)
+      command_builder.after("-rf #{tmp_dir}",:rm)
     end
 
   end

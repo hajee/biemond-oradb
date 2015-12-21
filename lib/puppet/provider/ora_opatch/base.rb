@@ -14,9 +14,8 @@ Puppet::Type.type(:ora_opatch).provide(:base) do
   end
 
   def self.prefetch(resources)
-    os_user = check_single_os_user(resources)
     orainst_dir = check_single_orainst_dir(resources)
-    all_patches = oracle_homes(resources).collect {|h| patches_in_home(h, os_user, orainst_dir)}.flatten
+    all_patches = oracle_homes(resources).collect {|h| patches_in_home(h, os_user_for_home(resources, h), orainst_dir)}.flatten
     resources.keys.each do |patch_name|
       if all_patches.include?(patch_name)
         resources[patch_name].provider = new(:name => name, :ensure => :present)
@@ -38,7 +37,6 @@ Puppet::Type.type(:ora_opatch).provide(:base) do
     full_command = "export ORACLE_HOME=#{oracle_product_home_dir}; cd #{oracle_product_home_dir}; #{oracle_product_home_dir}/OPatch/opatchauto #{command}"
     output = Puppet::Util::Execution.execute(full_command, options)
     Puppet.info output
-    fail "Opatchauto contained an error" unless output=~/OPatch completed|OPatch succeeded|opatch auto succeeded|opatchauto succeeded/
     output
   end
 
@@ -64,9 +62,9 @@ Puppet::Type.type(:ora_opatch).provide(:base) do
     patch_ids.collect{|p| "#{oracle_product_home_dir}:#{p}"}
   end
 
-  def self.check_single_os_user(resources)
-    os_users = resources.map{|k,v| v.os_user}.uniq
-    fail "db_opatch doesn't support multiple os_users" if os_users.size > 1
+  def self.os_user_for_home(resources, home)
+    os_users = resources.map{|k,v| v.os_user if v.oracle_product_home_dir == home}.compact.uniq
+    fail "db_opatch doesn't support multiple os_users in one oracle_home" if os_users.size > 1
     os_users.first
   end
 

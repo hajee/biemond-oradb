@@ -3,5 +3,5 @@ newparam(:tmp_dir) do
     The tmp extract directory of the patch.
   EOT
 
-  defaultto '/tmp'
+  defaultto '/tmp/opatch'
 end
