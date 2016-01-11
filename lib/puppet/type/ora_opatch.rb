@@ -49,7 +49,7 @@ module Puppet
     parameter :ocmrf_file
     parameter :source
     parameter :tmp_dir
-    parameter :source_folder
+    parameter :source_dir
 
     def opatch(command, options = {})
       provider.opatch(command, options)
@@ -81,8 +81,8 @@ module Puppet
     end
 
     def check_source_dir(parent)
-      patch_source_dir = Dir.glob("#{parent}/**/#{source_folder}").first
-      fail "#{source} doesn't contain folder #{source_folder}" unless patch_source_dir
+      patch_source_dir = Dir.glob("#{parent}/**/#{source_dir}").first
+      fail "#{source} doesn't contain folder #{source_dir}" unless patch_source_dir
       patch_source_dir
     end
 
