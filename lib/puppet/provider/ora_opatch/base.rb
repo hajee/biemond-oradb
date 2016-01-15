@@ -54,13 +54,13 @@ Puppet::Type.type(:ora_opatch).provide(:base) do
   end
 
   def self.patches_in_home(oracle_product_home_dir, os_user, orainst_dir)
-    full_command  = "#{oracle_product_home_dir}/OPatch/opatch lsinventory -oh #{oracle_product_home_dir} -invPtrLoc #{orainst_dir}/oraInst.loc"
-    raw_list = Puppet::Util::Execution.execute(full_command, :failonfail => true, :uid => os_user)
-    Puppet.info raw_list
-    patch_ids = raw_list.scan(/Patch\s.(\d+)\s.*:\sapplied on/).flatten
-    patch_ids.collect{|p| "#{oracle_product_home_dir}:#{p}"}
+        full_command  = "su - #{os_user} -c 'export ORACLE_HOME=#{oracle_product_home_dir}; cd #{oracle_product_home_dir}; #{oracle_product_home_dir}/OPatch/opatch lsinventory -oh #{oracle_product_home_dir} -invPtrLoc #{orainst_dir}/oraInst.loc'"
+        raw_list = %x{#{full_command}}
+        fail "Command #{full_command} returned #{$?}" if $?!=0
+        patch_ids = raw_list.scan(/Patch\s.(\d+)\s.*:\sapplied on/).flatten
+        patch_ids.collect{|p| "#{oracle_product_home_dir}:#{p}"}
   end
-
+    
   def self.os_user_for_home(resources, home)
     os_users = resources.map{|k,v| v.os_user if v.oracle_product_home_dir == home}.compact.uniq
     fail "db_opatch doesn't support multiple os_users in one oracle_home" if os_users.size > 1
