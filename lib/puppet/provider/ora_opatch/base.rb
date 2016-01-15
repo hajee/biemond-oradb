@@ -28,7 +28,6 @@ Puppet::Type.type(:ora_opatch).provide(:base) do
     full_command = "export ORACLE_HOME=#{oracle_product_home_dir}; cd #{oracle_product_home_dir}; #{oracle_product_home_dir}/OPatch/opatch #{command}"
     output = Puppet::Util::Execution.execute(full_command, options)
     Puppet.info output
-    fail "Opatch contained an error" unless output=~/OPatch completed|OPatch succeeded|opatch auto succeeded|opatchauto succeeded/
     output
   end
 
