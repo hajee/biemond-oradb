@@ -173,7 +173,7 @@ define oradb::installasm(
     }
 
     if ! defined($response_file_erb) {
-      $response_file_erb = "oradb/grid_install_${version}.rsp.erb";
+      $response_file_erb = "oradb/grid_install_${version}.rsp.erb"
     }
     
     if ! defined(File["${download_dir}/grid_install_${version}.rsp"]) {
