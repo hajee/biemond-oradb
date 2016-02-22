@@ -31,6 +31,7 @@ define oradb::installasm(
   $cluster_nodes             = undef,
   $network_interface_list    = undef,
   $storage_option            = undef,
+  $response_file_erb         = undef,     
 )
 {
 
@@ -171,10 +172,14 @@ define oradb::installasm(
       os_group          => $group_install,
     }
 
+    if ! defined($response_file_erb) {
+      $response_file_erb = "oradb/grid_install_${version}.rsp.erb";
+    }
+    
     if ! defined(File["${download_dir}/grid_install_${version}.rsp"]) {
       file { "${download_dir}/grid_install_${version}.rsp":
         ensure  => present,
-        content => template("oradb/grid_install_${version}.rsp.erb"),
+        content => template($response_file_erb),
         mode    => '0770',
         owner   => $user,
         group   => $group,
