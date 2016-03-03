@@ -172,7 +172,7 @@ define oradb::installasm(
       os_group          => $group_install,
     }
 
-    if defined($response_file_erb) {
+    if $response_file_erb != undef {
       $r_file_erb = $response_file_erb
     } else {
       $r_file_erb = "oradb/grid_install_${version}.rsp.erb"
